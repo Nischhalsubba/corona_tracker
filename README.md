@@ -23,7 +23,7 @@ HTML/SCSS/Javscript
 * HTML/SCSS/Javascript
 
 
-## Acknowledgments
+## Developers
 
 * Nihal Shrestha
 * Nischhal Raj Subba
