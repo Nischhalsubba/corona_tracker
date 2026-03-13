@@ -8,6 +8,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { siteName } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import type { CountrySnapshot } from "@/lib/types";
 
 const SIDEBAR_STORAGE_KEY = "pulseatlas-sidebar-collapsed";
 
@@ -22,15 +23,22 @@ const appItems = [
   { href: "/about", label: "About", icon: HelpIcon }
 ];
 
+type SidebarSearchResult = {
+  id: string;
+  label: string;
+  href: string;
+  type: string;
+  meta?: string;
+};
+
 export function SiteHeader() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
+  const [countries, setCountries] = useState<CountrySnapshot[]>([]);
   const asideRef = useRef<HTMLElement | null>(null);
   const brandRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLDivElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const footerRef = useRef<HTMLDivElement | null>(null);
   const labelRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -39,6 +47,27 @@ export function SiteHeader() {
     if (stored === "1") {
       setCollapsed(true);
     }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetch("/api/covid/countries")
+      .then((response) => response.json())
+      .then((data: CountrySnapshot[]) => {
+        if (mounted) {
+          setCountries(Array.isArray(data) ? data.slice(0, 200) : []);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setCountries([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filteredNavigation = useMemo(() => {
@@ -53,6 +82,37 @@ export function SiteHeader() {
     };
   }, [query]);
 
+  const searchResults = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return [];
+    }
+
+    const routeResults: SidebarSearchResult[] = [
+      ...navigationItems.map((item) => ({ id: item.href, label: item.label, href: item.href, type: "Page" })),
+      ...appItems.map((item) => ({ id: item.href, label: item.label, href: item.href, type: "Page" })),
+      { id: "/#global", label: "Global dashboard overview", href: "/", type: "Dashboard" },
+      { id: "/methodology#sources", label: "Sources and datasets", href: "/methodology", type: "Sources" },
+      { id: "/updates#live", label: "Live reporting notes", href: "/updates", type: "Updates" }
+    ].filter((item) => item.label.toLowerCase().includes(normalized));
+
+    const countryResults: SidebarSearchResult[] = countries
+      .filter((country) => {
+        const searchBase = [country.name, country.continent, country.iso2, country.iso3].filter(Boolean).join(" ").toLowerCase();
+        return searchBase.includes(normalized);
+      })
+      .slice(0, 6)
+      .map((country) => ({
+        id: country.slug,
+        label: country.name,
+        href: `/countries/${country.slug}`,
+        type: "Country",
+        meta: country.continent ?? "Country detail"
+      }));
+
+    return [...routeResults, ...countryResults].slice(0, 8);
+  }, [countries, query]);
+
   useLayoutEffect(() => {
     if (!asideRef.current) {
       return;
@@ -60,8 +120,6 @@ export function SiteHeader() {
 
     const brand = brandRef.current;
     const search = searchRef.current;
-    const content = contentRef.current;
-    const footer = footerRef.current;
     const labels = labelRefs.current.filter(Boolean);
     const sections = sectionRefs.current.filter(Boolean);
     const mm = gsap.matchMedia();
@@ -83,8 +141,6 @@ export function SiteHeader() {
 
       if (brand) gsap.to(brand, shared);
       if (search) gsap.to(search, shared);
-      if (content) gsap.to(content, shared);
-      if (footer) gsap.to(footer, shared);
       if (sections.length > 0) gsap.to(sections, { ...shared, stagger: collapsed ? 0 : 0.03 });
       if (labels.length > 0) {
         gsap.to(labels, {
@@ -116,7 +172,10 @@ export function SiteHeader() {
         <div className={cn("flex w-full items-center", collapsed ? "justify-center" : "justify-between")}>
           <Link
             href="/"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]"
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-[16px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]",
+              collapsed ? "h-12 w-12" : "h-12 w-12"
+            )}
             aria-label={`${siteName} home`}
           >
             <PulseIcon className="h-6 w-6" />
@@ -151,16 +210,38 @@ export function SiteHeader() {
         ) : null}
 
         <div ref={searchRef} className="hidden w-full overflow-hidden lg:block">
-          <label className="soft-panel flex items-center gap-3 rounded-[14px] px-3 py-3">
-            <SearchIcon className="h-4.5 w-4.5 text-[var(--text-tertiary)]" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search"
-              aria-label="Search sidebar routes"
-              className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"
-            />
-          </label>
+          <div className="relative">
+            <label className="soft-panel flex items-center gap-3 rounded-[14px] px-3 py-3">
+              <SearchIcon className="h-4.5 w-4.5 text-[var(--text-tertiary)]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search pages, countries, sources"
+                aria-label="Global app search"
+                className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"
+              />
+            </label>
+            {searchResults.length > 0 ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-[var(--shadow-md)]">
+                {searchResults.map((result) => (
+                  <Link
+                    key={result.id}
+                    href={result.href}
+                    onClick={() => setQuery("")}
+                    className="flex items-center justify-between rounded-[12px] px-3 py-2 hover:bg-[var(--surface-soft)]"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-[var(--foreground)]">{result.label}</div>
+                      <div className="truncate text-xs text-[var(--text-tertiary)]">{result.meta ?? result.type}</div>
+                    </div>
+                    <span className="ml-3 rounded-full bg-[var(--primary-soft)] px-2.5 py-1 text-[10px] font-semibold text-[var(--primary)]">
+                      {result.type}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className={cn("flex w-full items-center gap-2 lg:flex-col", collapsed ? "lg:gap-3" : "lg:gap-4")}>
@@ -185,28 +266,8 @@ export function SiteHeader() {
           />
         </div>
 
-        <div ref={footerRef} className="hidden w-full overflow-hidden lg:block">
-          {!collapsed ? (
-            <div className="rounded-[20px] bg-[linear-gradient(135deg,#9b68ff_0%,#7f56d9_100%)] px-4 py-4 text-white">
-              <div className="text-sm font-semibold">PulseAtlas Pro</div>
-              <div className="mt-2 text-xs text-white/80">Source monitoring, country comparison, and live reporting workflows in one place.</div>
-              <Link
-                href="/methodology"
-                className="mt-4 flex h-10 items-center justify-center rounded-[14px] bg-white text-sm font-semibold text-[#5f37c9]"
-              >
-                Explore sources
-              </Link>
-            </div>
-          ) : null}
-        </div>
-
         <div className={cn("mt-auto flex w-full items-center gap-2", collapsed ? "justify-center lg:flex-col" : "justify-between")}>
           <ThemeToggle />
-          {!collapsed ? (
-            <div className="hidden items-center gap-2 lg:flex">
-              <span className="text-xs text-[var(--text-tertiary)]">Theme</span>
-            </div>
-          ) : null}
         </div>
       </div>
     </aside>
@@ -238,12 +299,12 @@ function SidebarSection({
         ref={(node) => {
           sectionRefs.current[sectionIndex] = node;
         }}
-        className={cn("mb-2 hidden overflow-hidden px-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-tertiary)] lg:block", collapsed ? "" : "")}
+        className="mb-2 hidden overflow-hidden px-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-tertiary)] lg:block"
       >
         {title}
       </div>
 
-      <div className={cn("flex items-center gap-2 lg:flex-col", collapsed ? "lg:gap-3" : "lg:gap-2")}>
+      <div className={cn("flex items-center gap-2 lg:flex-col", collapsed ? "lg:gap-3.5" : "lg:gap-2")}>
         {items.map((item, index) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           const Icon = item.icon;
@@ -255,11 +316,11 @@ function SidebarSection({
               className={cn(
                 "group relative flex shrink-0 items-center rounded-[16px]",
                 collapsed
-                  ? "h-12 w-12 justify-center lg:mx-auto"
+                  ? "h-11 w-11 justify-center border border-transparent lg:mx-auto"
                   : "h-12 w-full justify-start gap-3 px-4",
                 active
                   ? collapsed
-                    ? "bg-[var(--foreground)] text-white"
+                    ? "bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-sm)] ring-1 ring-[var(--border)]"
                     : "bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-sm)]"
                   : "text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
               )}
@@ -274,7 +335,7 @@ function SidebarSection({
                 {item.label}
               </span>
               {collapsed && active ? (
-                <span className="absolute left-[calc(100%+10px)] top-1/2 hidden -translate-y-1/2 rounded-[10px] bg-[#7f56d9] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_20px_rgba(127,86,217,0.25)] lg:block">
+                <span className="absolute left-[calc(100%+10px)] top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-[10px] bg-[#7f56d9] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_20px_rgba(127,86,217,0.25)] lg:block">
                   {item.label}
                 </span>
               ) : null}
