@@ -51,10 +51,10 @@ export default async function CountryPage({ params }: CountryPageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="surface rounded-[32px] p-8">
-          <div className="text-sm font-medium text-[var(--muted)]">Back to dashboard / Countries / {country.name}</div>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight">{country.name} COVID-19 Overview</h1>
-          <p className="mt-3 max-w-2xl text-lg text-[var(--muted)]">Snapshot metrics and historical reporting for {country.name}.</p>
+        <div className="surface rounded-[28px] p-8">
+          <div className="text-sm font-medium text-[var(--text-tertiary)]">Back to dashboard / Countries / {country.name}</div>
+          <h1 className="mt-4 text-[2.4rem] font-bold tracking-[-0.04em]">{country.name} COVID-19 Overview</h1>
+          <p className="mt-3 max-w-2xl text-lg text-[var(--text-secondary)]">Snapshot metrics and historical reporting for {country.name}.</p>
         </div>
 
         <SourceBadge meta={country.sourceMeta} />
@@ -67,8 +67,8 @@ export default async function CountryPage({ params }: CountryPageProps) {
           ["Active Cases", country.activeCases],
           ["Total Deaths", country.totalDeaths]
         ].map(([label, value]) => (
-          <article key={label} className="surface rounded-[28px] p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{label}</div>
+          <article key={label} className="surface rounded-[24px] p-5">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">{label}</div>
             <div className="mt-3 text-3xl font-semibold">{formatNumber(value as number | null)}</div>
           </article>
         ))}
@@ -78,45 +78,45 @@ export default async function CountryPage({ params }: CountryPageProps) {
         <HistoryChart data={history} />
 
         <aside className="space-y-5">
-          <div className="surface rounded-[32px] p-5">
+          <div className="surface rounded-[28px] p-5">
             <h2 className="text-xl font-semibold">Source details</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">Current snapshot</dt>
+                <dt className="text-[var(--text-secondary)]">Current snapshot</dt>
                 <dd className="font-medium">{country.sourceMeta.label}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">Historical trend</dt>
+                <dt className="text-[var(--text-secondary)]">Historical trend</dt>
                 <dd className="font-medium">{historySource}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">Reporting cadence</dt>
+                <dt className="text-[var(--text-secondary)]">Reporting cadence</dt>
                 <dd className="font-medium">{country.sourceMeta.cadence}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">Definition</dt>
+                <dt className="text-[var(--text-secondary)]">Definition</dt>
                 <dd className="font-medium">Active cases = total cases - recovered - deaths</dd>
               </div>
             </dl>
           </div>
 
-          <div className="surface rounded-[32px] p-5">
+          <div className="surface rounded-[28px] p-5">
             <h2 className="text-xl font-semibold">Country profile</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">Population</dt>
+                <dt className="text-[var(--text-secondary)]">Population</dt>
                 <dd className="font-medium">{formatNumber(country.population)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">Region</dt>
+                <dt className="text-[var(--text-secondary)]">Region</dt>
                 <dd className="font-medium">{country.continent ?? "Not reported"}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">ISO 2</dt>
+                <dt className="text-[var(--text-secondary)]">ISO 2</dt>
                 <dd className="font-medium">{country.iso2 ?? "Not reported"}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[var(--muted)]">ISO 3</dt>
+                <dt className="text-[var(--text-secondary)]">ISO 3</dt>
                 <dd className="font-medium">{country.iso3 ?? "Not reported"}</dd>
               </div>
             </dl>

@@ -15,9 +15,9 @@ export default async function MethodologyPage() {
 
   return (
     <div className="space-y-8">
-      <section className="surface rounded-[32px] p-8">
-        <h1 className="text-4xl font-bold tracking-tight">Methodology &amp; Data Sources</h1>
-        <p className="mt-3 max-w-3xl text-lg text-[var(--muted)]">
+      <section className="surface rounded-[28px] p-8">
+        <h1 className="text-[2.4rem] font-bold tracking-[-0.04em]">Methodology &amp; Data Sources</h1>
+        <p className="mt-3 max-w-3xl text-lg text-[var(--text-secondary)]">
           This tracker combines public COVID-19 datasets and labels each view with source and reporting cadence.
         </p>
       </section>
@@ -29,30 +29,30 @@ export default async function MethodologyPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <article className="surface rounded-[32px] p-6">
+        <article className="surface rounded-[28px] p-6">
           <h2 className="text-2xl font-semibold">Current snapshot</h2>
-          <p className="mt-3 text-[var(--muted)]">
+          <p className="mt-3 text-[var(--text-secondary)]">
             Dashboard cards and country rankings prefer disease.sh for faster snapshot refreshes. If those requests fail, the app falls back to WHO weekly counts for core case and death totals.
           </p>
         </article>
 
-        <article className="surface rounded-[32px] p-6">
+        <article className="surface rounded-[28px] p-6">
           <h2 className="text-2xl font-semibold">Historical dataset</h2>
-          <p className="mt-3 text-[var(--muted)]">
+          <p className="mt-3 text-[var(--text-secondary)]">
             Country trend charts prefer OWID time series, with a disease.sh historical fallback when OWID is unavailable. Testing is not featured as a hero KPI because newer testing updates are not maintained consistently.
           </p>
         </article>
 
-        <article className="surface rounded-[32px] p-6">
+        <article className="surface rounded-[28px] p-6">
           <h2 className="text-2xl font-semibold">Weekly reporting</h2>
-          <p className="mt-3 text-[var(--muted)]">
+          <p className="mt-3 text-[var(--text-secondary)]">
             WHO data is labeled as weekly and never presented as live. When a module is powered by fallback data, the source badge makes that visible.
           </p>
         </article>
 
-        <article className="surface rounded-[32px] p-6">
+        <article className="surface rounded-[28px] p-6">
           <h2 className="text-2xl font-semibold">Metric definitions</h2>
-          <p className="mt-3 text-[var(--muted)]">
+          <p className="mt-3 text-[var(--text-secondary)]">
             Active cases are treated as estimated values, derived as total cases minus recoveries and deaths when the source provides the necessary fields. If a source does not provide recoveries or active counts, the UI shows that as not reported.
           </p>
         </article>

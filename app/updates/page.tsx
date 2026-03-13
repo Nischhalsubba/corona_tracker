@@ -22,17 +22,17 @@ const updates = [
 export default function UpdatesPage() {
   return (
     <div className="space-y-8">
-      <section className="surface rounded-[32px] p-8">
-        <h1 className="text-4xl font-bold tracking-tight">Updates &amp; Reporting Notes</h1>
-        <p className="mt-3 max-w-3xl text-lg text-[var(--muted)]">Product updates, source changes, and reporting notes.</p>
+      <section className="surface rounded-[28px] p-8">
+        <h1 className="text-[2.4rem] font-bold tracking-[-0.04em]">Updates &amp; Reporting Notes</h1>
+        <p className="mt-3 max-w-3xl text-lg text-[var(--text-secondary)]">Product updates, source changes, and reporting notes.</p>
       </section>
 
       <section className="space-y-4">
         {updates.map((update) => (
-          <article key={update.title} className="surface rounded-[32px] p-6">
-            <div className="text-sm font-medium text-[var(--muted)]">{update.date}</div>
+          <article key={update.title} className="surface rounded-[28px] p-6">
+            <div className="text-sm font-medium text-[var(--text-tertiary)]">{update.date}</div>
             <h2 className="mt-2 text-2xl font-semibold">{update.title}</h2>
-            <p className="mt-3 text-[var(--muted)]">{update.body}</p>
+            <p className="mt-3 text-[var(--text-secondary)]">{update.body}</p>
           </article>
         ))}
       </section>

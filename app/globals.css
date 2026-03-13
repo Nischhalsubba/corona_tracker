@@ -1,17 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f6ef;
-  --foreground: #102418;
-  --surface: rgba(255, 255, 255, 0.78);
-  --border: rgba(16, 36, 24, 0.1);
-  --primary: #0f766e;
-  --primary-soft: rgba(15, 118, 110, 0.12);
-  --positive: #3f8f4f;
-  --caution: #b7791f;
-  --negative: #9b2c2c;
-  --muted: #5e6a62;
-  --shadow: 0 20px 60px rgba(16, 36, 24, 0.08);
+  --background: #f5f6fa;
+  --background-soft: #fafbfd;
+  --foreground: #1e2430;
+  --surface: #ffffff;
+  --surface-soft: #fafbfd;
+  --border: #eef1f5;
+  --primary: #ff5a5f;
+  --primary-hover: #f24a50;
+  --primary-soft: #ffe8e8;
+  --positive: #34c759;
+  --caution: #ffb020;
+  --negative: #ff5a5f;
+  --info: #4c7dff;
+  --text-secondary: #667085;
+  --text-tertiary: #98a2b3;
+  --muted: #667085;
+  --shadow-sm: 0 8px 24px rgba(31, 41, 55, 0.06);
+  --shadow-md: 0 16px 40px rgba(31, 41, 55, 0.08);
 }
 
 * {
@@ -26,10 +33,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--foreground);
-  background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 30%),
-    radial-gradient(circle at top right, rgba(183, 121, 31, 0.14), transparent 28%),
-    linear-gradient(180deg, #fbfcf7 0%, #f4f6ef 45%, #eef2e8 100%);
+  background: linear-gradient(180deg, #f7f8fc 0%, #f5f6fa 100%);
   font-family: var(--font-body), sans-serif;
 }
 
@@ -43,25 +47,52 @@ img {
   max-width: 100%;
 }
 
-.app-shell::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(16, 36, 24, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 36, 24, 0.03) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 85%);
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 .surface {
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-sm);
 }
 
 .metric-gradient {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 244, 0.88) 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcfe 100%);
+}
+
+.soft-panel {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+}
+
+.soft-shadow {
+  box-shadow: var(--shadow-md);
+}
+
+.muted-text {
+  color: var(--text-secondary);
+}
+
+.meta-text {
+  color: var(--text-tertiary);
+}
+
+.dashboard-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content-shell {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-shell {
+    display: block;
+  }
 }

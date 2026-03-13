@@ -19,9 +19,9 @@ export default async function CountriesPage() {
   return (
     <div className="space-y-8">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="surface rounded-[32px] p-8">
-          <h1 className="text-4xl font-bold tracking-tight">Countries</h1>
-          <p className="mt-3 max-w-2xl text-lg text-[var(--muted)]">
+        <div className="surface rounded-[28px] p-8">
+          <h1 className="text-[2.4rem] font-bold tracking-[-0.04em]">Countries</h1>
+          <p className="mt-3 max-w-2xl text-lg text-[var(--text-secondary)]">
             Search and compare country-level COVID-19 reporting with indexable detail pages.
           </p>
         </div>
