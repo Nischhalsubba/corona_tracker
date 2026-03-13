@@ -27,7 +27,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="soft-panel flex h-11 w-11 items-center justify-center rounded-[16px] text-[var(--text-secondary)] hover:-translate-y-0.5 hover:text-[var(--foreground)]"
+      className="soft-panel flex h-11 w-11 items-center justify-center rounded-[16px] text-[var(--text-secondary)] hover:text-[var(--foreground)]"
       aria-label={mounted ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : "Toggle theme"}
       aria-pressed={theme === "dark"}
       title={mounted ? `Theme: ${theme}` : "Toggle theme"}
