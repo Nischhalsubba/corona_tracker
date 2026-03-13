@@ -37,6 +37,10 @@ export type CountrySnapshot = {
   todayCases: number | null;
   todayDeaths: number | null;
   todayRecovered: number | null;
+  criticalCases: number | null;
+  tests: number | null;
+  casesPerMillion: number | null;
+  deathsPerMillion: number | null;
   sourceMeta: SourceMeta;
 };
 
@@ -45,4 +49,18 @@ export type CountrySeriesPoint = {
   cases: number | null;
   deaths: number | null;
   source: SourceId;
+};
+
+export type ReportingUpdate = {
+  id: string;
+  slug: string | null;
+  title: string;
+  summary: string;
+  metricLabel: string;
+  metricValue: number | null;
+  secondaryLabel?: string;
+  secondaryValue?: number | null;
+  tone: "primary" | "positive" | "negative" | "info";
+  publishedAt: string;
+  sourceMeta: SourceMeta;
 };

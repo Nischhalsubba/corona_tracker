@@ -1,11 +1,10 @@
 import { csvParse } from "d3-dsv";
 import { z } from "zod";
 
-import type { CountrySeriesPoint, CountrySnapshot, GlobalSummary, SourceMeta } from "@/lib/types";
+import type { CountrySeriesPoint, CountrySnapshot, GlobalSummary, ReportingUpdate, SourceMeta } from "@/lib/types";
 import { slugifyCountry } from "@/lib/utils";
 
 const DISEASE_REVALIDATE_SECONDS = 60 * 20;
-const OWID_REVALIDATE_SECONDS = 60 * 60 * 12;
 const WHO_REVALIDATE_SECONDS = 60 * 60 * 24;
 
 const diseaseGlobalSchema = z.object({
@@ -37,7 +36,11 @@ const diseaseCountriesSchema = z.array(
     todayDeaths: z.number().nullable().optional(),
     recovered: z.number().nullable().optional(),
     todayRecovered: z.number().nullable().optional(),
-    active: z.number().nullable().optional()
+    active: z.number().nullable().optional(),
+    critical: z.number().nullable().optional(),
+    tests: z.number().nullable().optional(),
+    casesPerOneMillion: z.number().nullable().optional(),
+    deathsPerOneMillion: z.number().nullable().optional()
   })
 );
 
@@ -67,34 +70,24 @@ function asIsoString(value: string | number | Date) {
   return new Date(value).toISOString();
 }
 
-function diseaseMeta(updated: number): SourceMeta {
+function liveMeta(updated: number): SourceMeta {
   return {
     source: "disease_sh",
     label: "disease.sh",
     cadence: "near-real-time",
     lastSynced: asIsoString(updated),
-    note: "Current snapshot cards are sourced from disease.sh."
+    note: "Dashboard, country pages, and reporting notes are generated from disease.sh current COVID-19 endpoints."
   };
 }
 
-function whoMeta(): SourceMeta {
+function whoFallbackMeta(): SourceMeta {
   return {
     source: "who",
     label: "WHO",
     cadence: "weekly",
     lastSynced: new Date().toISOString(),
     fallback: true,
-    note: "WHO downloadable data is used as the official weekly fallback."
-  };
-}
-
-function owidMeta(lastSynced: string): SourceMeta {
-  return {
-    source: "owid",
-    label: "Our World in Data",
-    cadence: "daily",
-    lastSynced: asIsoString(lastSynced),
-    note: "Historical country trends prefer OWID time-series data."
+    note: "WHO weekly downloadable data is used only as a resilience fallback when the live source is unavailable."
   };
 }
 
@@ -123,7 +116,11 @@ function toCountrySnapshot(country: DiseaseCountry): CountrySnapshot {
     todayCases: country.todayCases ?? null,
     todayDeaths: country.todayDeaths ?? null,
     todayRecovered: country.todayRecovered ?? null,
-    sourceMeta: diseaseMeta(country.updated)
+    criticalCases: country.critical ?? null,
+    tests: country.tests ?? null,
+    casesPerMillion: country.casesPerOneMillion ?? null,
+    deathsPerMillion: country.deathsPerOneMillion ?? null,
+    sourceMeta: liveMeta(country.updated)
   };
 }
 
@@ -144,7 +141,7 @@ async function getWhoFallbackGlobal(): Promise<GlobalSummary> {
   }
 
   return {
-    sourceMeta: whoMeta(),
+    sourceMeta: whoFallbackMeta(),
     totalCases: parseNumber(row["Cases - cumulative total"]) ?? 0,
     totalRecovered: null,
     totalDeaths: parseNumber(row["Deaths - cumulative total"]) ?? 0,
@@ -175,7 +172,11 @@ async function getWhoFallbackCountries(): Promise<CountrySnapshot[]> {
       todayCases: parseNumber(row["Cases - newly reported in last 24 hours"]),
       todayDeaths: parseNumber(row["Deaths - newly reported in last 24 hours"]),
       todayRecovered: null,
-      sourceMeta: whoMeta()
+      criticalCases: null,
+      tests: null,
+      casesPerMillion: null,
+      deathsPerMillion: null,
+      sourceMeta: whoFallbackMeta()
     }))
     .sort((a, b) => b.totalCases - a.totalCases);
 }
@@ -189,7 +190,7 @@ export async function getGlobalSummary(): Promise<GlobalSummary> {
     );
 
     return {
-      sourceMeta: diseaseMeta(data.updated),
+      sourceMeta: liveMeta(data.updated),
       totalCases: data.cases,
       totalRecovered: data.recovered ?? null,
       totalDeaths: data.deaths,
@@ -212,7 +213,9 @@ export async function getCountries(): Promise<CountrySnapshot[]> {
       diseaseCountriesSchema
     );
 
-    return data.map(toCountrySnapshot);
+    return data
+      .map(toCountrySnapshot)
+      .filter((country) => Boolean(country.name));
   } catch {
     return getWhoFallbackCountries();
   }
@@ -223,38 +226,26 @@ export async function getCountrySnapshot(slug: string) {
   return countries.find((country) => country.slug === slug) ?? null;
 }
 
-async function getOwidCsv() {
-  const urls = [
-    "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv",
-    "https://covid.ourworldindata.org/data/owid-covid-data.csv"
-  ];
+export async function getCountryHistory(slug: string): Promise<CountrySeriesPoint[]> {
+  const country = await getCountrySnapshot(slug);
 
-  for (const url of urls) {
-    try {
-      return await fetchText(url, OWID_REVALIDATE_SECONDS);
-    } catch {
-      // Try next URL.
-    }
+  if (!country) {
+    return [];
   }
 
-  throw new Error("Unable to fetch OWID historical data");
-}
-
-async function getDiseaseHistoryFallback(countryName: string): Promise<CountrySeriesPoint[]> {
-  const response = await fetch(
-    `https://disease.sh/v3/covid-19/historical/${encodeURIComponent(countryName)}?lastdays=all`,
-    { next: { revalidate: OWID_REVALIDATE_SECONDS } }
-  );
+  const response = await fetch(`https://disease.sh/v3/covid-19/historical/${encodeURIComponent(country.name)}?lastdays=all`, {
+    next: { revalidate: DISEASE_REVALIDATE_SECONDS }
+  });
 
   if (!response.ok) {
-    throw new Error("Historical fallback failed");
+    return [];
   }
 
   const json = z
     .object({
       timeline: z.object({
-        cases: z.record(z.string(), z.number()),
-        deaths: z.record(z.string(), z.number())
+        cases: z.record(z.string(), z.number()).optional().default({}),
+        deaths: z.record(z.string(), z.number()).optional().default({})
       })
     })
     .parse(await response.json());
@@ -262,7 +253,8 @@ async function getDiseaseHistoryFallback(countryName: string): Promise<CountrySe
   return Object.keys(json.timeline.cases)
     .map((key) => {
       const [month, day, year] = key.split("/");
-      const date = `20${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      const fullYear = year.length === 2 ? `20${year}` : year;
+      const date = `${fullYear}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 
       return {
         date,
@@ -274,43 +266,73 @@ async function getDiseaseHistoryFallback(countryName: string): Promise<CountrySe
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export async function getCountryHistory(slug: string): Promise<CountrySeriesPoint[]> {
-  const country = await getCountrySnapshot(slug);
+export async function getReportingUpdates(): Promise<ReportingUpdate[]> {
+  const [global, countries] = await Promise.all([getGlobalSummary(), getCountries()]);
 
-  if (!country) {
-    return [];
-  }
+  const caseLeaders = [...countries]
+    .filter((country) => (country.todayCases ?? 0) > 0)
+    .sort((a, b) => (b.todayCases ?? 0) - (a.todayCases ?? 0))
+    .slice(0, 4)
+    .map((country) => ({
+      id: `cases-${country.slug}`,
+      slug: country.slug,
+      title: `${country.name} reported the highest case increase`,
+      summary: `${country.name} added ${country.todayCases ?? 0} newly reported cases in the latest live snapshot.`,
+      metricLabel: "New cases",
+      metricValue: country.todayCases,
+      secondaryLabel: "Total cases",
+      secondaryValue: country.totalCases,
+      tone: "primary" as const,
+      publishedAt: country.sourceMeta.lastSynced,
+      sourceMeta: country.sourceMeta
+    }));
 
-  if (!country.iso3) {
-    return getDiseaseHistoryFallback(country.name);
-  }
+  const deathLeaders = [...countries]
+    .filter((country) => (country.todayDeaths ?? 0) > 0)
+    .sort((a, b) => (b.todayDeaths ?? 0) - (a.todayDeaths ?? 0))
+    .slice(0, 3)
+    .map((country) => ({
+      id: `deaths-${country.slug}`,
+      slug: country.slug,
+      title: `${country.name} showed the largest death change`,
+      summary: `${country.name} recorded ${country.todayDeaths ?? 0} newly reported deaths in the latest live refresh.`,
+      metricLabel: "New deaths",
+      metricValue: country.todayDeaths,
+      secondaryLabel: "Total deaths",
+      secondaryValue: country.totalDeaths,
+      tone: "negative" as const,
+      publishedAt: country.sourceMeta.lastSynced,
+      sourceMeta: country.sourceMeta
+    }));
 
-  try {
-    const csv = await getOwidCsv();
-    const rows = csvParse(csv);
-    const series = rows
-      .filter((row) => row["iso_code"] === country.iso3)
-      .map((row) => ({
-        date: row["date"]!,
-        cases: parseNumber(row["total_cases"]),
-        deaths: parseNumber(row["total_deaths"]),
-        source: "owid" as const
-      }))
-      .filter((row) => row.date && (row.cases !== null || row.deaths !== null))
-      .sort((a, b) => a.date.localeCompare(b.date));
+  const globalNote: ReportingUpdate = {
+    id: "global-snapshot",
+    slug: null,
+    title: "Global live reporting snapshot",
+    summary: `The latest global refresh shows ${global.todayCases ?? 0} new cases and ${global.todayDeaths ?? 0} new deaths across currently reporting countries.`,
+    metricLabel: "Affected countries",
+    metricValue: global.affectedCountries,
+    secondaryLabel: "Global cases",
+    secondaryValue: global.totalCases,
+    tone: "info",
+    publishedAt: global.sourceMeta.lastSynced,
+    sourceMeta: global.sourceMeta
+  };
 
-    if (series.length > 0) {
-      return series;
-    }
-  } catch {
-    // Use fallback below.
-  }
-
-  return getDiseaseHistoryFallback(country.name);
+  return [globalNote, ...caseLeaders, ...deathLeaders];
 }
 
 export async function getSourceCatalog() {
   const global = await getGlobalSummary();
 
-  return [global.sourceMeta, owidMeta(new Date().toISOString()), whoMeta()];
+  return [
+    global.sourceMeta,
+    {
+      source: "disease_sh" as const,
+      label: "disease.sh historical",
+      cadence: "daily" as const,
+      lastSynced: global.sourceMeta.lastSynced,
+      note: "Historical context is pulled from the same public source when the archive endpoint is available."
+    }
+  ];
 }

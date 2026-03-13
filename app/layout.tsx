@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="dashboard-shell">
           <SiteHeader />
           <div className="content-shell">
-            <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+            <main className="w-full px-4 py-5 sm:px-6 lg:px-8 lg:py-6">{children}</main>
             <SiteFooter />
           </div>
         </div>

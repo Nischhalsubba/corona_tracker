@@ -17,17 +17,17 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <aside className="border-b border-[var(--border)] bg-transparent lg:min-h-screen lg:w-[126px] lg:border-b-0 lg:border-r lg:p-6">
-      <div className="soft-panel soft-shadow mx-auto flex max-w-[1600px] items-center justify-between rounded-[28px] p-4 lg:sticky lg:top-6 lg:flex-col lg:justify-start lg:gap-8 lg:p-4">
+    <aside className="border-b border-[var(--border)] bg-transparent lg:min-h-screen lg:w-[102px] lg:border-b-0 lg:border-r lg:px-4 lg:py-5">
+      <div className="soft-panel soft-shadow mx-auto flex items-center justify-between rounded-[26px] p-3 lg:sticky lg:top-5 lg:min-h-[calc(100vh-40px)] lg:flex-col lg:justify-start lg:gap-6">
         <Link
           href="/"
-          className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]"
+          className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]"
           aria-label="COVID-19 Tracker home"
         >
-          <VirusIcon className="h-7 w-7" />
+          <VirusIcon className="h-6 w-6" />
         </Link>
 
-        <nav aria-label="Primary navigation" className="flex items-center gap-2 lg:flex-1 lg:flex-col lg:gap-3">
+        <nav aria-label="Primary navigation" className="flex items-center gap-2 lg:flex-1 lg:flex-col lg:gap-2">
           {navItems.map((item) => {
             const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -37,14 +37,14 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] text-[var(--text-secondary)] transition lg:h-auto lg:w-full lg:flex-col lg:gap-2 lg:px-3 lg:py-4",
+                  "group flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] text-[var(--text-secondary)] transition lg:h-auto lg:w-full lg:flex-col lg:gap-1.5 lg:px-2 lg:py-3",
                   active
                     ? "bg-[var(--primary)] text-white shadow-[0_16px_32px_rgba(255,90,95,0.28)]"
                     : "hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
                 )}
               >
-                <Icon className="h-5 w-5" />
-                <span className={cn("hidden text-[11px] font-semibold lg:block", active ? "text-white" : "text-[var(--text-secondary)]")}>
+                <Icon className="h-4.5 w-4.5" />
+                <span className={cn("hidden text-[10px] font-semibold lg:block", active ? "text-white" : "text-[var(--text-secondary)]")}>
                   {item.label}
                 </span>
               </Link>
@@ -52,8 +52,8 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="hidden lg:flex lg:h-12 lg:w-12 lg:items-center lg:justify-center lg:rounded-[18px] lg:bg-[var(--surface)] lg:text-[var(--text-tertiary)]">
-          <LogoutIcon className="h-5 w-5" />
+        <div className="hidden lg:flex lg:h-11 lg:w-11 lg:items-center lg:justify-center lg:rounded-[16px] lg:bg-[var(--surface)] lg:text-[var(--text-tertiary)]">
+          <LogoutIcon className="h-4.5 w-4.5" />
         </div>
       </div>
     </aside>

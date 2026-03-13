@@ -33,7 +33,9 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--foreground);
-  background: linear-gradient(180deg, #f7f8fc 0%, #f5f6fa 100%);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 90, 95, 0.06), transparent 18%),
+    linear-gradient(180deg, #f7f8fc 0%, #f2f4fb 100%);
   font-family: var(--font-body), sans-serif;
 }
 
@@ -84,15 +86,21 @@ select {
 .dashboard-shell {
   display: flex;
   min-height: 100vh;
+  align-items: stretch;
 }
 
 .content-shell {
   flex: 1;
   min-width: 0;
+  padding-left: 2px;
 }
 
 @media (max-width: 1023px) {
   .dashboard-shell {
     display: block;
+  }
+
+  .content-shell {
+    padding-left: 0;
   }
 }

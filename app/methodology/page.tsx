@@ -5,8 +5,7 @@ import { getSourceCatalog } from "@/lib/data/covid";
 
 export const metadata: Metadata = {
   title: "Methodology & Data Sources",
-  description:
-    "Learn how this tracker collects, labels, and refreshes COVID-19 data from public sources, including update cadence and metric definitions.",
+  description: "Learn how the tracker collects live COVID-19 reporting data, refreshes the dashboard, and labels its source behavior.",
   alternates: { canonical: "/methodology" }
 };
 
@@ -14,46 +13,49 @@ export default async function MethodologyPage() {
   const sources = await getSourceCatalog();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section className="surface rounded-[28px] p-8">
-        <h1 className="text-[2.4rem] font-bold tracking-[-0.04em]">Methodology &amp; Data Sources</h1>
-        <p className="mt-3 max-w-3xl text-lg text-[var(--text-secondary)]">
-          This tracker combines public COVID-19 datasets and labels each view with source and reporting cadence.
+        <div className="inline-flex rounded-[14px] bg-[var(--primary-soft)] px-4 py-2 text-xs font-semibold text-[var(--primary)]">
+          Implementation notes
+        </div>
+        <h1 className="mt-5 text-[2.6rem] font-bold tracking-[-0.05em]">Methodology &amp; Data Sources</h1>
+        <p className="mt-4 max-w-3xl text-lg text-[var(--text-secondary)]">
+          The current product is optimized around live public COVID-19 reporting. Dashboard cards, country pages, country rankings, and reporting notes are driven by free current endpoints.
         </p>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-2">
         {sources.map((source) => (
           <SourceBadge key={`${source.source}-${source.label}`} meta={source} />
         ))}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      <section className="grid gap-5 xl:grid-cols-2">
         <article className="surface rounded-[28px] p-6">
-          <h2 className="text-2xl font-semibold">Current snapshot</h2>
-          <p className="mt-3 text-[var(--text-secondary)]">
-            Dashboard cards and country rankings prefer disease.sh for faster snapshot refreshes. If those requests fail, the app falls back to WHO weekly counts for core case and death totals.
+          <h2 className="text-[1.9rem] font-bold tracking-[-0.04em]">Live data strategy</h2>
+          <p className="mt-4 text-base text-[var(--text-secondary)]">
+            The tracker now prioritizes live disease.sh COVID-19 endpoints for global totals, country detail, rankings, and reporting notes. This keeps user-facing pages aligned around one free current source instead of mixing live and non-live content in the main experience.
           </p>
         </article>
 
         <article className="surface rounded-[28px] p-6">
-          <h2 className="text-2xl font-semibold">Historical dataset</h2>
-          <p className="mt-3 text-[var(--text-secondary)]">
-            Country trend charts prefer OWID time series, with a disease.sh historical fallback when OWID is unavailable. Testing is not featured as a hero KPI because newer testing updates are not maintained consistently.
+          <h2 className="text-[1.9rem] font-bold tracking-[-0.04em]">Refresh policy</h2>
+          <p className="mt-4 text-base text-[var(--text-secondary)]">
+            Current requests are cached for roughly 20 minutes at the application layer. The UI still labels the actual source refresh time so visitors can see when the current snapshot was last updated.
           </p>
         </article>
 
         <article className="surface rounded-[28px] p-6">
-          <h2 className="text-2xl font-semibold">Weekly reporting</h2>
-          <p className="mt-3 text-[var(--text-secondary)]">
-            WHO data is labeled as weekly and never presented as live. When a module is powered by fallback data, the source badge makes that visible.
+          <h2 className="text-[1.9rem] font-bold tracking-[-0.04em]">Reporting notes page</h2>
+          <p className="mt-4 text-base text-[var(--text-secondary)]">
+            The updates page is no longer static editorial copy. It is generated from current country-level case and death deltas, so visitors see live reporting notes backed by the same free source used throughout the app.
           </p>
         </article>
 
         <article className="surface rounded-[28px] p-6">
-          <h2 className="text-2xl font-semibold">Metric definitions</h2>
-          <p className="mt-3 text-[var(--text-secondary)]">
-            Active cases are treated as estimated values, derived as total cases minus recoveries and deaths when the source provides the necessary fields. If a source does not provide recoveries or active counts, the UI shows that as not reported.
+          <h2 className="text-[1.9rem] font-bold tracking-[-0.04em]">Fallback behavior</h2>
+          <p className="mt-4 text-base text-[var(--text-secondary)]">
+            If the current source fails, the app can fall back to WHO weekly data for core resilience. That fallback is labeled clearly and should be treated as backup behavior rather than the primary live experience.
           </p>
         </article>
       </section>
