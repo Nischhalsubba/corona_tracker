@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SourceBadge } from "@/components/source-badge";
-import { getCountrySnapshot, getReportingUpdates } from "@/lib/data/covid";
+import { getCountryHistory, getCountrySnapshot, getReportingUpdates } from "@/lib/data/covid";
+import { siteUrl } from "@/lib/site";
 import { formatCompactNumber, formatNumber, safeRatio } from "@/lib/utils";
 
 type CountryPageProps = {
@@ -33,18 +34,19 @@ export default async function CountryPage({ params }: CountryPageProps) {
     notFound();
   }
 
-  const updates = await getReportingUpdates();
+  const [updates, history] = await Promise.all([getReportingUpdates(), getCountryHistory(slug)]);
   const relatedUpdate = updates.find((update) => update.slug === country.slug) ?? null;
   const recoveryRatio = safeRatio(country.totalRecovered, country.totalCases);
   const fatalityRatio = safeRatio(country.totalDeaths, country.totalCases);
+  const lastArchivePoint = history.at(-1) ?? null;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Dashboard", item: "https://example.com/" },
-      { "@type": "ListItem", position: 2, name: "Countries", item: "https://example.com/countries" },
-      { "@type": "ListItem", position: 3, name: country.name, item: `https://example.com/countries/${country.slug}` }
+      { "@type": "ListItem", position: 1, name: "Dashboard", item: `${siteUrl}/` },
+      { "@type": "ListItem", position: 2, name: "Countries", item: `${siteUrl}/countries` },
+      { "@type": "ListItem", position: 3, name: country.name, item: `${siteUrl}/countries/${country.slug}` }
     ]
   };
 
@@ -172,6 +174,10 @@ export default async function CountryPage({ params }: CountryPageProps) {
               <div className="flex items-center justify-between rounded-[18px] bg-[var(--surface-soft)] px-4 py-4">
                 <dt className="text-[var(--text-secondary)]">ISO 2 / ISO 3</dt>
                 <dd className="font-semibold">{country.iso2 ?? "--"} / {country.iso3 ?? "--"}</dd>
+              </div>
+              <div className="flex items-center justify-between rounded-[18px] bg-[var(--surface-soft)] px-4 py-4">
+                <dt className="text-[var(--text-secondary)]">Archive context</dt>
+                <dd className="font-semibold">{lastArchivePoint ? lastArchivePoint.date : "Not available"}</dd>
               </div>
             </dl>
           </div>

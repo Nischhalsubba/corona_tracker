@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { SourceBadge } from "@/components/source-badge";
-import { getSourceCatalog } from "@/lib/data/covid";
+import { getSourceCatalog, SOURCE_ENDPOINT_GROUPS } from "@/lib/data/covid";
 
 export const metadata: Metadata = {
   title: "Methodology & Data Sources",
@@ -31,10 +32,32 @@ export default async function MethodologyPage() {
       </section>
 
       <section className="grid gap-5 xl:grid-cols-2">
+        {SOURCE_ENDPOINT_GROUPS.map((group) => (
+          <article key={group.id} className="surface rounded-[28px] p-6">
+            <h2 className="text-[1.55rem] font-bold tracking-[-0.04em]">{group.title}</h2>
+            <p className="mt-3 text-base text-[var(--text-secondary)]">{group.description}</p>
+            <div className="mt-5 space-y-3">
+              {group.endpoints.map((endpoint) => (
+                <Link
+                  key={endpoint}
+                  href={endpoint}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded-[18px] bg-[var(--surface-soft)] px-4 py-4 text-sm font-medium text-[var(--foreground)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                >
+                  <span className="block break-all">{endpoint}</span>
+                </Link>
+              ))}
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-2">
         <article className="surface rounded-[28px] p-6">
           <h2 className="text-[1.9rem] font-bold tracking-[-0.04em]">Live data strategy</h2>
           <p className="mt-4 text-base text-[var(--text-secondary)]">
-            The tracker now prioritizes live disease.sh COVID-19 endpoints for global totals, country detail, rankings, and reporting notes. This keeps user-facing pages aligned around one free current source instead of mixing live and non-live content in the main experience.
+            The tracker prioritizes live disease.sh COVID-19 endpoints for global totals, country detail, rankings, and reporting notes. The WHO, OWID, and DataHub links above are kept visible in the product as official or archival reference layers rather than replacing the current live dashboard flow.
           </p>
         </article>
 
@@ -48,7 +71,7 @@ export default async function MethodologyPage() {
         <article className="surface rounded-[28px] p-6">
           <h2 className="text-[1.9rem] font-bold tracking-[-0.04em]">Reporting notes page</h2>
           <p className="mt-4 text-base text-[var(--text-secondary)]">
-            The updates page is no longer static editorial copy. It is generated from current country-level case and death deltas, so visitors see live reporting notes backed by the same free source used throughout the app.
+            The updates page is no longer static editorial copy. It is generated from current country-level case and death deltas, so visitors see live reporting notes backed by the same free source used throughout the app, with archive and official links still available for deeper checking.
           </p>
         </article>
 

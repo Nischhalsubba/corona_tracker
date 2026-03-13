@@ -1,4 +1,4 @@
-export type SourceId = "disease_sh" | "owid" | "who";
+export type SourceId = "disease_sh" | "owid" | "who" | "datahub";
 export type Cadence = "near-real-time" | "daily" | "weekly";
 
 export type SourceMeta = {

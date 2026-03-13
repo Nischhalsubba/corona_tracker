@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getGlobalSummary, getReportingUpdates } from "@/lib/data/covid";
+import { getGlobalSummary, getReportingUpdates, SOURCE_ENDPOINT_GROUPS } from "@/lib/data/covid";
 import { formatCompactNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -85,6 +85,29 @@ export default async function UpdatesPage() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className="surface rounded-[28px] p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="inline-flex rounded-[14px] bg-[var(--surface-soft)] px-4 py-2 text-xs font-semibold text-[var(--text-secondary)]">
+              Source coverage
+            </div>
+            <h2 className="mt-4 text-[1.9rem] font-bold tracking-[-0.04em]">Reference feeds linked in the product</h2>
+          </div>
+          <Link href="/methodology" className="rounded-[14px] bg-[var(--primary-soft)] px-4 py-3 text-sm font-semibold text-[var(--primary)]">
+            Open methodology
+          </Link>
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+          {SOURCE_ENDPOINT_GROUPS.map((group) => (
+            <div key={group.id} className="soft-panel rounded-[20px] px-5 py-5">
+              <div className="text-sm font-semibold text-[var(--foreground)]">{group.title}</div>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">{group.description}</p>
+              <div className="mt-3 text-xs font-semibold text-[var(--primary)]">{group.endpoints.length} linked endpoints</div>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

@@ -6,6 +6,56 @@ import { slugifyCountry } from "@/lib/utils";
 
 const DISEASE_REVALIDATE_SECONDS = 60 * 20;
 const WHO_REVALIDATE_SECONDS = 60 * 60 * 24;
+const ARCHIVE_REVALIDATE_SECONDS = 60 * 60 * 12;
+
+const DISEASE_GLOBAL_URL = "https://disease.sh/v3/covid-19/all";
+const DISEASE_COUNTRIES_URL = "https://disease.sh/v3/covid-19/countries?sort=cases";
+const DISEASE_COUNTRY_URL = "https://disease.sh/v3/covid-19/countries/nepal";
+const DISEASE_HISTORICAL_GLOBAL_URL = "https://disease.sh/v3/covid-19/historical/all?lastdays=all";
+const DISEASE_HISTORICAL_COUNTRY_URL = "https://disease.sh/v3/covid-19/historical/nepal?lastdays=all";
+const WHO_GLOBAL_DATA_URL = "https://srhdpeuwpubsa.blob.core.windows.net/whdh/COVID/WHO-COVID-19-global-data.csv";
+const WHO_GLOBAL_TABLE_URL = "https://srhdpeuwpubsa.blob.core.windows.net/whdh/COVID/WHO-COVID-19-global-table-data.csv";
+const WHO_GLOBAL_DAILY_URL = "https://srhdpeuwpubsa.blob.core.windows.net/whdh/COVID/WHO-COVID-19-global-daily-data.csv";
+const WHO_HOSPITAL_URL = "https://srhdpeuwpubsa.blob.core.windows.net/whdh/COVID/WHO-COVID-19-global-hosp-icu-data.csv";
+const OWID_CSV_URL = "https://covid.ourworldindata.org/data/owid-covid-data.csv";
+const OWID_LATEST_CSV_URL = "https://covid.ourworldindata.org/data/latest/owid-covid-latest.csv";
+const OWID_JSON_URL = "https://covid.ourworldindata.org/data/owid-covid-data.json";
+const DATAHUB_COUNTRIES_URL = "https://datahub.io/core/covid-19/_r/-/data/countries-aggregated.csv";
+const DATAHUB_COMBINED_URL = "https://datahub.io/core/covid-19/_r/-/data/time-series-19-covid-combined.csv";
+const DATAHUB_WORLD_URL = "https://datahub.io/core/covid-19/_r/-/data/worldwide-aggregate.csv";
+
+export const SOURCE_ENDPOINT_GROUPS = [
+  {
+    id: "disease-sh",
+    title: "disease.sh live endpoints",
+    description: "Primary free current source for dashboard totals, country snapshots, rankings, and live reporting notes.",
+    endpoints: [
+      DISEASE_GLOBAL_URL,
+      DISEASE_COUNTRIES_URL,
+      DISEASE_COUNTRY_URL,
+      DISEASE_HISTORICAL_GLOBAL_URL,
+      DISEASE_HISTORICAL_COUNTRY_URL
+    ]
+  },
+  {
+    id: "who",
+    title: "WHO official downloads",
+    description: "Official weekly and downloadable reference files used for fallback behavior and methodology validation.",
+    endpoints: [WHO_GLOBAL_DATA_URL, WHO_GLOBAL_TABLE_URL, WHO_GLOBAL_DAILY_URL, WHO_HOSPITAL_URL]
+  },
+  {
+    id: "owid",
+    title: "Our World in Data archive feeds",
+    description: "Broad historical archive feeds that support long-run context and dataset cross-checking.",
+    endpoints: [OWID_CSV_URL, OWID_LATEST_CSV_URL, OWID_JSON_URL]
+  },
+  {
+    id: "datahub",
+    title: "DataHub backup archives",
+    description: "Additional CSV archive coverage for aggregate and time-series verification outside the live disease.sh layer.",
+    endpoints: [DATAHUB_COUNTRIES_URL, DATAHUB_COMBINED_URL, DATAHUB_WORLD_URL]
+  }
+] as const;
 
 const diseaseGlobalSchema = z.object({
   updated: z.number(),
@@ -64,6 +114,20 @@ async function fetchText(url: string, revalidate: number) {
   }
 
   return response.text();
+}
+
+async function getRemoteLastModified(url: string, revalidate: number) {
+  try {
+    const response = await fetch(url, { method: "HEAD", next: { revalidate } });
+    if (!response.ok) {
+      return null;
+    }
+
+    const header = response.headers.get("last-modified") ?? response.headers.get("date");
+    return header ? new Date(header).toISOString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function asIsoString(value: string | number | Date) {
@@ -184,7 +248,7 @@ async function getWhoFallbackCountries(): Promise<CountrySnapshot[]> {
 export async function getGlobalSummary(): Promise<GlobalSummary> {
   try {
     const data = await fetchJson(
-      "https://disease.sh/v3/covid-19/all",
+      DISEASE_GLOBAL_URL,
       DISEASE_REVALIDATE_SECONDS,
       diseaseGlobalSchema
     );
@@ -208,7 +272,7 @@ export async function getGlobalSummary(): Promise<GlobalSummary> {
 export async function getCountries(): Promise<CountrySnapshot[]> {
   try {
     const data = await fetchJson(
-      "https://disease.sh/v3/covid-19/countries?sort=cases",
+      DISEASE_COUNTRIES_URL,
       DISEASE_REVALIDATE_SECONDS,
       diseaseCountriesSchema
     );
@@ -324,15 +388,43 @@ export async function getReportingUpdates(): Promise<ReportingUpdate[]> {
 
 export async function getSourceCatalog() {
   const global = await getGlobalSummary();
+  const [diseaseArchiveStamp, whoStamp, owidStamp, datahubStamp] = await Promise.all([
+    getRemoteLastModified(DISEASE_HISTORICAL_GLOBAL_URL, DISEASE_REVALIDATE_SECONDS),
+    getRemoteLastModified(WHO_GLOBAL_TABLE_URL, WHO_REVALIDATE_SECONDS),
+    getRemoteLastModified(OWID_LATEST_CSV_URL, ARCHIVE_REVALIDATE_SECONDS),
+    getRemoteLastModified(DATAHUB_WORLD_URL, ARCHIVE_REVALIDATE_SECONDS)
+  ]);
 
   return [
     global.sourceMeta,
     {
       source: "disease_sh" as const,
-      label: "disease.sh historical",
+      label: "disease.sh historical archive",
       cadence: "daily" as const,
-      lastSynced: global.sourceMeta.lastSynced,
-      note: "Historical context is pulled from the same public source when the archive endpoint is available."
+      lastSynced: diseaseArchiveStamp ?? global.sourceMeta.lastSynced,
+      note: "Historical all-country and country archive endpoints are exposed in the app for long-run COVID-19 context."
+    },
+    {
+      source: "who" as const,
+      label: "WHO downloadable releases",
+      cadence: "weekly" as const,
+      lastSynced: whoStamp ?? new Date().toISOString(),
+      fallback: true,
+      note: "WHO CSV releases are linked directly in the app for official weekly reference and resilience fallback."
+    },
+    {
+      source: "owid" as const,
+      label: "Our World in Data archive",
+      cadence: "daily" as const,
+      lastSynced: owidStamp ?? new Date().toISOString(),
+      note: "OWID CSV and JSON feeds are documented in the product as broad archive inputs for historical verification."
+    },
+    {
+      source: "datahub" as const,
+      label: "DataHub CSV archive",
+      cadence: "daily" as const,
+      lastSynced: datahubStamp ?? new Date().toISOString(),
+      note: "DataHub aggregate and time-series CSVs are included as secondary archive references for cross-checking."
     }
   ];
 }

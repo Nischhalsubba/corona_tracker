@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { siteName, siteUrl } from "@/lib/site";
 
 const bodyFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -13,10 +14,10 @@ const bodyFont = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://example.com"),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "COVID-19 Tracker: Global Cases, Recoveries, Deaths & Country Trends",
-    template: "%s | COVID-19 Tracker"
+    default: `${siteName}: Global Cases, Recoveries, Deaths & Country Trends`,
+    template: `%s | ${siteName}`
   },
   description:
     "Track COVID-19 cases, recoveries, deaths, and country trends in one dashboard. Explore global metrics, country rankings, historical charts, and transparent data sources.",
@@ -38,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="dashboard-shell">
           <SiteHeader />
           <div className="content-shell">
-            <main className="w-full px-4 py-5 sm:px-6 lg:px-8 lg:py-6">{children}</main>
+            <main className="w-full px-4 py-5 sm:px-5 lg:px-6 lg:py-5 xl:px-7">{children}</main>
             <SiteFooter />
           </div>
         </div>
