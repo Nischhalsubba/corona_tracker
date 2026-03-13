@@ -313,7 +313,9 @@ function SidebarSection({
                   : "text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
               )}
             >
-              <Icon className="h-4.5 w-4.5 shrink-0" />
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                <Icon className="h-4.5 w-4.5 shrink-0" />
+              </span>
               <span
                 ref={(node) => {
                   labelRefs.current[labelOffset + index] = node;
