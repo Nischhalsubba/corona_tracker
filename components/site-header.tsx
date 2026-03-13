@@ -17,8 +17,8 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <aside className="border-b border-[var(--border)] bg-transparent lg:min-h-screen lg:w-[112px] lg:border-b-0 lg:border-r lg:p-6">
-      <div className="soft-panel soft-shadow mx-auto flex max-w-[1600px] items-center justify-between rounded-[28px] p-4 lg:sticky lg:top-6 lg:flex-col lg:justify-start lg:gap-10 lg:p-4">
+    <aside className="border-b border-[var(--border)] bg-transparent lg:min-h-screen lg:w-[126px] lg:border-b-0 lg:border-r lg:p-6">
+      <div className="soft-panel soft-shadow mx-auto flex max-w-[1600px] items-center justify-between rounded-[28px] p-4 lg:sticky lg:top-6 lg:flex-col lg:justify-start lg:gap-8 lg:p-4">
         <Link
           href="/"
           className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]"
@@ -27,7 +27,7 @@ export function SiteHeader() {
           <VirusIcon className="h-7 w-7" />
         </Link>
 
-        <nav aria-label="Primary navigation" className="flex items-center gap-2 lg:flex-1 lg:flex-col lg:gap-4">
+        <nav aria-label="Primary navigation" className="flex items-center gap-2 lg:flex-1 lg:flex-col lg:gap-3">
           {navItems.map((item) => {
             const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -37,7 +37,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group flex h-12 w-12 items-center justify-center rounded-[18px] text-[var(--text-secondary)] transition lg:h-auto lg:w-full lg:flex-col lg:gap-2 lg:px-3 lg:py-4",
+                  "group flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] text-[var(--text-secondary)] transition lg:h-auto lg:w-full lg:flex-col lg:gap-2 lg:px-3 lg:py-4",
                   active
                     ? "bg-[var(--primary)] text-white shadow-[0_16px_32px_rgba(255,90,95,0.28)]"
                     : "hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
@@ -63,6 +63,8 @@ export function SiteHeader() {
 function iconProps(className?: string) {
   return {
     viewBox: "0 0 24 24",
+    width: 24,
+    height: 24,
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 1.8,
