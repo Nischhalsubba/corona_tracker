@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { siteName } from "@/lib/site";
@@ -70,19 +70,7 @@ export function SiteHeader() {
     };
   }, []);
 
-  const filteredNavigation = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) {
-      return { navigation: navigationItems, app: appItems };
-    }
-
-    return {
-      navigation: navigationItems.filter((item) => item.label.toLowerCase().includes(normalized)),
-      app: appItems.filter((item) => item.label.toLowerCase().includes(normalized))
-    };
-  }, [query]);
-
-  const searchResults = useMemo(() => {
+  const searchResults = (() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) {
       return [];
@@ -111,7 +99,7 @@ export function SiteHeader() {
       }));
 
     return [...routeResults, ...countryResults].slice(0, 8);
-  }, [countries, query]);
+  })();
 
   useLayoutEffect(() => {
     if (!asideRef.current) {
@@ -244,10 +232,10 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <div className={cn("flex w-full items-center gap-2 lg:flex-col", collapsed ? "lg:gap-3" : "lg:gap-4")}>
+        <div className={cn("flex w-full items-center gap-2 lg:flex-col lg:items-center", collapsed ? "lg:gap-3" : "lg:gap-4")}>
           <SidebarSection
             title="Navigation"
-            items={filteredNavigation.navigation}
+            items={navigationItems}
             pathname={pathname}
             collapsed={collapsed}
             labelRefs={labelRefs}
@@ -256,13 +244,13 @@ export function SiteHeader() {
           />
           <SidebarSection
             title="App"
-            items={filteredNavigation.app}
+            items={appItems}
             pathname={pathname}
             collapsed={collapsed}
             labelRefs={labelRefs}
             sectionIndex={1}
             sectionRefs={sectionRefs}
-            labelOffset={filteredNavigation.navigation.length}
+            labelOffset={navigationItems.length}
           />
         </div>
 
@@ -294,7 +282,7 @@ function SidebarSection({
   labelOffset?: number;
 }) {
   return (
-    <div className={cn("w-full", collapsed ? "lg:flex lg:w-auto lg:flex-col" : "")}>
+    <div className={cn("w-full", collapsed ? "lg:flex lg:w-full lg:flex-col lg:items-center" : "")}>
       <div
         ref={(node) => {
           sectionRefs.current[sectionIndex] = node;
@@ -304,7 +292,7 @@ function SidebarSection({
         {title}
       </div>
 
-      <div className={cn("flex items-center gap-2 lg:flex-col", collapsed ? "lg:gap-3.5" : "lg:gap-2")}>
+      <div className={cn("flex items-center gap-2 lg:flex-col lg:items-center", collapsed ? "lg:gap-3.5" : "lg:gap-2")}>
         {items.map((item, index) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           const Icon = item.icon;
@@ -316,7 +304,7 @@ function SidebarSection({
               className={cn(
                 "group relative flex shrink-0 items-center rounded-[16px]",
                 collapsed
-                  ? "h-11 w-11 justify-center border border-transparent lg:mx-auto"
+                  ? "h-11 w-11 justify-center border border-transparent"
                   : "h-12 w-full justify-start gap-3 px-4",
                 active
                   ? collapsed
