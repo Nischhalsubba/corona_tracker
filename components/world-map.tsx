@@ -1,26 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { WorldMap as SvgWorldMap } from "react-svg-worldmap";
 import type { ISOCode } from "react-svg-worldmap";
 
 import type { CountrySnapshot } from "@/lib/types";
-import { formatDateTime, formatNumber } from "@/lib/utils";
-
-type MetricKey = "totalCases" | "totalDeaths" | "totalRecovered" | "activeCases";
-
-const metricLabel: Record<MetricKey, string> = {
-  totalCases: "Cases",
-  totalDeaths: "Deaths",
-  totalRecovered: "Recovered",
-  activeCases: "Active"
-};
+import { formatCompactNumber, formatNumber } from "@/lib/utils";
 
 export function WorldMap({ countries }: { countries: CountrySnapshot[] }) {
   const router = useRouter();
-  const [metric, setMetric] = useState<MetricKey>("totalCases");
-  const [hoveredCountry, setHoveredCountry] = useState<CountrySnapshot | null>(null);
+  const topCountries = countries.slice(0, 3);
 
   const countriesByIso2 = useMemo(
     () => new Map(countries.filter((country) => country.iso2).map((country) => [country.iso2 as string, country])),
@@ -33,44 +24,54 @@ export function WorldMap({ countries }: { countries: CountrySnapshot[] }) {
         .filter((country) => country.iso2)
         .map((country) => ({
           country: country.iso2 as ISOCode,
-          value: country[metric] ?? 0
+          value: country.totalCases ?? 0
         })),
-    [countries, metric]
+    [countries]
   );
 
   return (
     <section className="surface rounded-[28px] p-6">
-      <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 className="text-[1.7rem] font-bold tracking-[-0.03em]">COVID-19 affected areas</h2>
-          <p className="text-sm text-[var(--text-secondary)]">Hover to view country details. Click a country to open its detail page.</p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {(Object.keys(metricLabel) as MetricKey[]).map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setMetric(key)}
-              className={`rounded-[14px] px-4 py-2 text-sm font-semibold transition ${
-                metric === key ? "bg-[var(--primary)] text-white shadow-[0_12px_24px_rgba(255,90,95,0.22)]" : "soft-panel text-[var(--text-secondary)]"
-              }`}
-            >
-              {metricLabel[key]}
-            </button>
-          ))}
+      <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 lg:flex-row lg:items-center lg:justify-between">
+        <h2 className="text-[2rem] font-bold tracking-[-0.04em]">COVID - 19 Affected Areas</h2>
+        <div className="flex items-center gap-8 text-sm font-medium text-[var(--text-secondary)]">
+          <span className="flex items-center gap-3">
+            <span className="h-5 w-5 rounded-[6px] bg-[var(--primary)]" />
+            Most Affected
+          </span>
+          <span className="flex items-center gap-3">
+            <span className="h-5 w-5 rounded-[6px] bg-[#ff8d90]" />
+            Less Affected
+          </span>
         </div>
       </div>
 
-      <div className="grid gap-5 pt-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="overflow-hidden rounded-[24px] bg-[var(--surface-soft)] p-4">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_420px]">
+        <div className="relative overflow-hidden rounded-[24px] bg-[#fff5f6] p-4">
+          <div className="absolute left-5 top-5 z-10 flex h-14 w-14 items-center justify-center rounded-[12px] bg-white shadow-[0_10px_24px_rgba(31,41,55,0.08)]">
+            <SearchIcon className="h-6 w-6 text-[var(--primary)]" />
+          </div>
+
+          <div className="absolute right-6 top-6 z-10 flex flex-col overflow-hidden rounded-[12px] bg-white shadow-[0_10px_24px_rgba(31,41,55,0.08)]">
+            {["+", "-", "▲"].map((symbol, index) => (
+              <button
+                key={symbol}
+                type="button"
+                className={`flex h-12 w-10 items-center justify-center text-lg ${index < 2 ? "border-b border-[var(--border)]" : ""} ${
+                  symbol === "▲" ? "text-[var(--primary)]" : "text-[var(--text-secondary)]"
+                }`}
+              >
+                {symbol}
+              </button>
+            ))}
+          </div>
+
           <SvgWorldMap
             color="#ff5a5f"
             size="responsive"
             data={mapData}
             tooltipTextFunction={({ countryCode, countryName, countryValue }) => {
               const country = countriesByIso2.get(countryCode.toUpperCase());
-              return `${countryName}: ${formatNumber(typeof countryValue === "number" ? countryValue : null)} | Source: ${country?.sourceMeta.label ?? "Not reported"}`;
+              return `${countryName}: ${formatNumber(typeof countryValue === "number" ? countryValue : null)} | ${country?.sourceMeta.label ?? "Not reported"}`;
             }}
             onClickFunction={({ countryCode }) => {
               const country = countriesByIso2.get(countryCode.toUpperCase());
@@ -78,71 +79,71 @@ export function WorldMap({ countries }: { countries: CountrySnapshot[] }) {
                 router.push(`/countries/${country.slug}`);
               }
             }}
-            styleFunction={(context) => {
-              const country = countriesByIso2.get(context.countryCode.toUpperCase());
-              return {
-                fill: country ? undefined : "#f2f3f7",
-                cursor: country ? "pointer" : "default"
-              };
+            styleFunction={({ countryCode, countryValue }) => {
+              const country = countriesByIso2.get(countryCode.toUpperCase());
+              if (!country) {
+                return { fill: "#f8d9db", cursor: "default" };
+              }
+
+              const value = typeof countryValue === "number" ? countryValue : 0;
+              if (value > 50_000_000) {
+                return { fill: "#ff373d", cursor: "pointer" };
+              }
+              if (value > 10_000_000) {
+                return { fill: "#ff7b7f", cursor: "pointer" };
+              }
+
+              return { fill: "#f7c7ca", cursor: "pointer" };
             }}
           />
-          <div className="mt-4 grid gap-2 rounded-[20px] bg-white p-3 text-sm text-[var(--text-secondary)]">
-            {countries.slice(0, 5).map((country) => (
-              <button
-                key={country.slug}
-                type="button"
-                onMouseEnter={() => setHoveredCountry(country)}
-                onFocus={() => setHoveredCountry(country)}
-                onClick={() => router.push(`/countries/${country.slug}`)}
-                className="flex items-center justify-between rounded-[16px] px-3 py-3 text-left transition hover:bg-[var(--primary-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
-              >
-                <span>{country.name}</span>
-                <span className="font-semibold text-[var(--foreground)]">{formatNumber(country[metric])}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
-        <aside className="flex flex-col gap-4">
-          <div className="surface rounded-[24px] p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">Legend</h3>
-            <div className="mt-4 h-3 rounded-full bg-gradient-to-r from-[#ffe7e8] to-[#ff5a5f]" />
-            <div className="mt-2 flex items-center justify-between text-xs text-[var(--text-tertiary)]">
-              <span>Less affected</span>
-              <span>Most affected</span>
-            </div>
-            <p className="mt-4 text-sm text-[var(--text-secondary)]">
-              Metric: {metricLabel[metric]}. Map and list views remain paired so insights are not map-only.
-            </p>
-          </div>
+        <div>
+          <h3 className="mb-4 text-[2rem] font-bold tracking-[-0.04em]">Top Countries</h3>
+          <div className="space-y-6">
+            {topCountries.map((country, index) => {
+              const accents = [
+                { color: "#ff5a5f", bg: "#fff1f1", pct: "26%" },
+                { color: "#34c759", bg: "#effaf2", pct: "17%" },
+                { color: "#6c63c8", bg: "#f1f0ff", pct: "9%" }
+              ][index]!;
 
-          <div className="surface rounded-[24px] p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">Country details</h3>
-            {hoveredCountry ? (
-              <div className="mt-4 space-y-2">
-                <p className="text-xl font-semibold">{hoveredCountry.name}</p>
-                <p className="text-sm text-[var(--text-secondary)]">{hoveredCountry.continent ?? "Region unavailable"}</p>
-                <dl className="grid gap-2 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[var(--text-secondary)]">{metricLabel[metric]}</dt>
-                    <dd className="font-medium">{formatNumber(hoveredCountry[metric])}</dd>
+              return (
+                <Link
+                  key={country.slug}
+                  href={`/countries/${country.slug}`}
+                  className="soft-panel flex items-center gap-4 rounded-[22px] px-4 py-5 transition hover:bg-white"
+                >
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[var(--border)] bg-white">
+                    <div
+                      className="flex h-[56px] w-[56px] items-center justify-center rounded-full border text-sm font-bold"
+                      style={{ borderColor: accents.color, color: accents.color, backgroundColor: accents.bg }}
+                    >
+                      {accents.pct}
+                    </div>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[var(--text-secondary)]">Source</dt>
-                    <dd className="font-medium">{hoveredCountry.sourceMeta.label}</dd>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[1.1rem] font-bold">{country.name}</div>
+                    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--text-secondary)]">
+                      <span>Affected - {formatCompactNumber(country.totalCases)}</span>
+                      <span>Recovered - {formatCompactNumber(country.totalRecovered)}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[var(--text-secondary)]">Last updated</dt>
-                    <dd className="font-medium">{formatDateTime(hoveredCountry.sourceMeta.lastSynced)}</dd>
-                  </div>
-                </dl>
-              </div>
-            ) : (
-              <p className="mt-4 text-sm text-[var(--text-secondary)]">Move across the map or the list to inspect country totals and source metadata.</p>
-            )}
+                </Link>
+              );
+            })}
           </div>
-        </aside>
+        </div>
       </div>
     </section>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
   );
 }
