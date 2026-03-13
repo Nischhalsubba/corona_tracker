@@ -1,67 +1,60 @@
-
 # Corona Tracker
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-
-> *A small project that tracks COVID‑19 statistics (cases, recoveries, deaths) using publicly available APIs and displays them on a dashboard*
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
-- [Usage](#usage)
-- [License](#license)
-- [Contributing](#contributing)
-- [Suggestions for Improvement](#suggestions-for-improvement)
+Multi-source COVID-19 tracker built with Next.js App Router and TypeScript.
 
 ## Overview
 
-A small project that tracks COVID‑19 statistics (cases, recoveries, deaths) using publicly available APIs and displays them on a dashboard.
+This app is designed as a public, SEO-friendly COVID-19 data product rather than a single-page dashboard. It uses:
 
-## Features
+- `disease.sh` for current global and country snapshots
+- `OWID` for historical country trend lines
+- `WHO` as the official weekly fallback/reference layer
+- internal Next.js route handlers to normalize upstream payloads before they reach the UI
 
-| ✔️ | Feature |
-|---|---|
-| ✅ | Fetches real‑time COVID‑19 data |
-| ✅ | Displays statistics in tables and charts |
-| ✅ | Simple user interface |
+## Routes
 
+- `/` dashboard
+- `/countries` searchable country index
+- `/countries/[slug]` country detail pages
+- `/updates` reporting notes
+- `/methodology` source and cadence documentation
+- `/about` product scope and limitations
 
-## Tech Stack
+Internal API routes:
 
-- 🛠️ HTML
-- 🛠️ CSS
-- 🛠️ JavaScript
-- 🛠️ Chart.js
+- `/api/covid/global`
+- `/api/covid/countries`
+- `/api/covid/country/[slug]`
+- `/api/covid/history/[slug]`
+- `/api/covid/sources`
 
-## Installation
+## Stack
 
-Follow these steps to get a local copy of the project up and running:
+- Next.js App Router
+- TypeScript
+- Tailwind CSS v4
+- Zod
+- Recharts
+- react-simple-maps
 
-1. Clone the repository: `git clone https://github.com/Nischhalsubba/corona_tracker.git`.
-2. Open `index.html` in your browser to view the dashboard.
+## Run Locally
 
-## Usage
+1. Install dependencies:
 
-Deploy the project on GitHub Pages or any static host to share real‑time COVID‑19 stats with your community.
+   ```bash
+   npm install
+   ```
 
-## License
+2. Start development mode:
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for more information.
+   ```bash
+   npm run dev
+   ```
 
-## Contributing
+3. Open `http://localhost:3000`
 
-Contributions are welcome! Please open an issue or submit a pull request. For major changes, please open an issue first to discuss what you would like to change.
+## Notes
 
-## Suggestions for Improvement
-
-<details>
-<summary>Click to expand</summary>
-
-- Update the API endpoint or remove it if COVID‑19 data is no longer required
-- Add graphs or charts to visualize trends
-- Refactor code into modules and use modern frameworks (React/Vue) for maintainability
-
-</details>
+- Every major data view exposes source and last updated information.
+- WHO data is labeled as weekly and not presented as live.
+- Historical charts prefer OWID and fall back to disease.sh historical data when needed.
