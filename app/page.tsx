@@ -31,8 +31,8 @@ export default async function HomePage() {
             <div className="mt-7 flex items-center justify-center">
               <div className="relative flex h-[250px] w-[250px] items-center justify-center rounded-full bg-[conic-gradient(from_210deg,_rgba(255,90,95,0.94)_0_31%,_#f2ecee_31%_100%)] p-[10px]">
                 <div className="absolute left-1/2 top-[14px] h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#e48a92]" />
-                <div className="absolute bottom-[24px] right-[14px] h-5 w-5 rounded-full border-4 border-white bg-[var(--primary)] shadow-[0_10px_22px_rgba(255,90,95,0.25)]" />
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-center">
+                <div className="absolute bottom-[24px] right-[14px] h-5 w-5 rounded-full border-4 border-[var(--surface)] bg-[var(--primary)] shadow-[0_10px_22px_rgba(255,90,95,0.25)]" />
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--surface)] text-center">
                   <div className="text-[2.8rem] font-bold tracking-[-0.05em] text-[var(--foreground)]">
                     {recoveryRatio !== null ? `${(recoveryRatio * 100).toFixed(1)}%` : "N/A"}
                   </div>
@@ -95,14 +95,14 @@ export default async function HomePage() {
         {previewUpdates.map((update, index) => (
           <article key={update.id} className="surface rounded-[28px] p-8">
             <div className="grid gap-6 md:grid-cols-[180px_minmax(0,1fr)] md:items-end">
-              <div className="flex h-[220px] items-end justify-center rounded-[24px] bg-white">
+              <div className="flex h-[220px] items-end justify-center rounded-[24px] bg-[var(--surface)]">
                 <div className="relative h-40 w-40">
                   <div className={`absolute left-5 top-6 h-6 w-14 rounded-full ${index === 0 ? "bg-[#ffe2e2]" : "bg-[#e7f7eb]"}`} />
                   <div className={`absolute right-6 top-2 h-7 w-16 rounded-full ${index === 0 ? "bg-[#ffeaea]" : "bg-[#f0fbf3]"}`} />
                   <div className={`absolute left-16 top-12 h-16 w-16 rounded-full ${index === 0 ? "bg-[var(--primary)]" : "bg-[var(--positive)]"}`} />
                   <div className="absolute left-2 bottom-0 h-20 w-12 rounded-t-[24px] bg-[#2b3589]" />
                   <div className="absolute right-3 bottom-0 h-24 w-12 rounded-t-[24px] bg-[#4a43b8]" />
-                  <div className="absolute left-[52px] bottom-5 h-14 w-14 rounded-[18px] bg-white" />
+                  <div className="absolute left-[52px] bottom-5 h-14 w-14 rounded-[18px] bg-[var(--surface)]" />
                 </div>
               </div>
               <div>

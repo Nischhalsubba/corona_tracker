@@ -1,24 +1,48 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f5f6fa;
-  --background-soft: #fafbfd;
-  --foreground: #1e2430;
+:root,
+:root[data-theme="light"] {
+  --background: #f2f5fb;
+  --background-soft: #f8faff;
+  --foreground: #162033;
   --surface: #ffffff;
-  --surface-soft: #fafbfd;
-  --border: #eef1f5;
+  --surface-soft: #f7f9fd;
+  --border: #dbe3ec;
   --primary: #ff5a5f;
   --primary-hover: #f24a50;
   --primary-soft: #ffe8e8;
-  --positive: #34c759;
-  --caution: #ffb020;
+  --positive: #2f9e5a;
+  --caution: #b87400;
   --negative: #ff5a5f;
-  --info: #4c7dff;
-  --text-secondary: #667085;
-  --text-tertiary: #98a2b3;
-  --muted: #667085;
+  --info: #2e64e6;
+  --text-secondary: #4f5f73;
+  --text-tertiary: #64748b;
+  --muted: #4f5f73;
   --shadow-sm: 0 8px 24px rgba(31, 41, 55, 0.06);
   --shadow-md: 0 16px 40px rgba(31, 41, 55, 0.08);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #0f1724;
+  --background-soft: #162132;
+  --foreground: #f7fbff;
+  --surface: #132033;
+  --surface-soft: #19283c;
+  --border: #2b3a4c;
+  --primary: #ff6f74;
+  --primary-hover: #ff8c90;
+  --primary-soft: rgba(255, 111, 116, 0.14);
+  --positive: #49d17a;
+  --caution: #ffca63;
+  --negative: #ff7e83;
+  --info: #74a7ff;
+  --text-secondary: #d0dae8;
+  --text-tertiary: #aebacc;
+  --muted: #d0dae8;
+  --shadow-sm: 0 12px 34px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 24px 48px rgba(0, 0, 0, 0.32);
+  color-scheme: dark;
 }
 
 * {
@@ -34,8 +58,8 @@ body {
   min-height: 100vh;
   color: var(--foreground);
   background:
-    radial-gradient(circle at 18% 18%, rgba(255, 90, 95, 0.06), transparent 18%),
-    linear-gradient(180deg, #f7f8fc 0%, #f2f4fb 100%);
+    radial-gradient(circle at 18% 18%, rgba(255, 90, 95, 0.07), transparent 18%),
+    linear-gradient(180deg, var(--background-soft) 0%, var(--background) 100%);
   font-family: var(--font-body), sans-serif;
 }
 
@@ -82,7 +106,7 @@ button {
 }
 
 .metric-gradient {
-  background: linear-gradient(180deg, #ffffff 0%, #fcfcfe 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
 }
 
 .soft-panel {
@@ -117,6 +141,18 @@ button {
   flex: 1;
   min-width: 0;
   padding-left: 0;
+}
+
+.tracker-map-region {
+  transition:
+    fill 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.tracker-map-region:hover {
+  fill: var(--primary-hover) !important;
+  opacity: 1 !important;
 }
 
 @keyframes page-enter {

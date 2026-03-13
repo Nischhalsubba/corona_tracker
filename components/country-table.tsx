@@ -99,7 +99,7 @@ export function CountryTable({ countries }: { countries: CountrySnapshot[] }) {
                 <td className="rounded-r-2xl px-3 py-4">
                   <Link
                     href={`/countries/${country.slug}`}
-                    className="inline-flex rounded-[14px] bg-[var(--primary-soft)] px-3 py-2 font-semibold text-[var(--primary)] transition hover:bg-[#ffdada]"
+                    className="inline-flex rounded-[14px] bg-[var(--primary-soft)] px-3 py-2 font-semibold text-[var(--primary)] transition hover:opacity-90"
                   >
                     View country
                   </Link>

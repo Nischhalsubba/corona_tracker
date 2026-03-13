@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description:
     "Track COVID-19 cases, recoveries, deaths, and country trends in one dashboard. Explore global metrics, country rankings, historical charts, and transparent data sources.",
   openGraph: {
-    title: "COVID-19 Tracker",
+    title: siteName,
     description:
       "Global and country-level COVID-19 reporting with source labels, update cadence, and historical trend views.",
     type: "website"
@@ -34,8 +34,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={bodyFont.variable}>
+    <html lang="en" className={bodyFont.variable} suppressHydrationWarning>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                var stored = localStorage.getItem('pulseatlas-theme');
+                document.documentElement.dataset.theme = stored === 'dark' ? 'dark' : 'light';
+              })();
+            `
+          }}
+        />
         <div className="dashboard-shell">
           <SiteHeader />
           <div className="content-shell">

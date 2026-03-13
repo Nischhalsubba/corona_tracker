@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+import { siteName } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -17,15 +19,21 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <aside className="border-b border-[var(--border)] bg-transparent lg:min-h-screen lg:w-[94px] lg:border-b-0 lg:border-r lg:px-3 lg:py-4">
+    <aside className="border-b border-[var(--border)] bg-transparent lg:min-h-screen lg:w-[104px] lg:border-b-0 lg:border-r lg:px-3 lg:py-4">
       <div className="soft-panel soft-shadow mx-auto flex items-center justify-between rounded-[24px] p-3 lg:sticky lg:top-4 lg:min-h-[calc(100vh-32px)] lg:flex-col lg:justify-start lg:gap-5">
-        <Link
-          href="/"
-          className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]"
-          aria-label="COVID-19 Tracker home"
-        >
-          <VirusIcon className="h-6 w-6" />
-        </Link>
+        <div className="flex items-center gap-3 lg:flex-col lg:gap-2">
+          <Link
+            href="/"
+            className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[var(--surface)] text-[var(--primary)] shadow-[var(--shadow-sm)]"
+            aria-label={`${siteName} home`}
+          >
+            <PulseIcon className="h-6 w-6" />
+          </Link>
+          <div className="hidden text-center lg:block">
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--foreground)]">{siteName}</div>
+            <div className="mt-1 text-[10px] text-[var(--text-tertiary)]">Live reporting</div>
+          </div>
+        </div>
 
         <nav aria-label="Primary navigation" className="flex items-center gap-2 lg:flex-1 lg:flex-col lg:gap-2.5 lg:pt-2">
           {navItems.map((item) => {
@@ -52,8 +60,15 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="hidden lg:flex lg:h-11 lg:w-11 lg:items-center lg:justify-center lg:rounded-[16px] lg:bg-[var(--surface)] lg:text-[var(--text-tertiary)] lg:mb-1">
-          <LogoutIcon className="h-4.5 w-4.5" />
+        <div className="flex items-center gap-2 lg:flex-col lg:items-center lg:gap-2 lg:pb-1">
+          <ThemeToggle />
+          <Link
+            href="/about"
+            className="soft-panel flex h-11 w-11 items-center justify-center rounded-[16px] text-[var(--text-tertiary)] hover:-translate-y-0.5 hover:text-[var(--foreground)]"
+            aria-label="Open about page"
+          >
+            <InfoIcon className="h-4.5 w-4.5" />
+          </Link>
         </div>
       </div>
     </aside>
@@ -74,15 +89,11 @@ function iconProps(className?: string) {
   };
 }
 
-function VirusIcon({ className }: { className?: string }) {
+function PulseIcon({ className }: { className?: string }) {
   return (
     <svg {...iconProps(className)}>
-      <circle cx="12" cy="12" r="4.5" />
-      <path d="M12 2.5v3M12 18.5v3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M2.5 12h3M18.5 12h3M4.9 19.1l2.2-2.2M16.9 7.1l2.2-2.2" />
-      <circle cx="12" cy="7.2" r="1" fill="currentColor" stroke="none" />
-      <circle cx="16.8" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="16.8" r="1" fill="currentColor" stroke="none" />
-      <circle cx="7.2" cy="12" r="1" fill="currentColor" stroke="none" />
+      <path d="M3 12h4l2.2-4.5 3.2 9 2.2-5H21" />
+      <circle cx="12" cy="12" r="8.5" />
     </svg>
   );
 }
@@ -137,11 +148,11 @@ function HelpIcon({ className }: { className?: string }) {
   );
 }
 
-function LogoutIcon({ className }: { className?: string }) {
+function InfoIcon({ className }: { className?: string }) {
   return (
     <svg {...iconProps(className)}>
-      <path d="M10 5H7.5A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19H10" />
-      <path d="M14 8.5 18 12l-4 3.5M18 12H9" />
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 10.2v5.6M12 7.3h.01" />
     </svg>
   );
 }
