@@ -1,8 +1,8 @@
 import { csvParse } from "d3-dsv";
 import { z } from "zod";
 
-import type { CountrySeriesPoint, CountrySnapshot, GlobalSummary, ReportingUpdate, SourceMeta } from "@/lib/types";
-import { slugifyCountry } from "@/lib/utils";
+import type { CountrySeriesPoint, CountrySnapshot, GlobalSummary, ReportingUpdate, SourceMeta, SourceSnapshot } from "@/lib/types";
+import { formatCompactNumber, formatDate, getCountrySlugCandidates, slugifyCountry } from "@/lib/utils";
 
 const DISEASE_REVALIDATE_SECONDS = 60 * 20;
 const WHO_REVALIDATE_SECONDS = 60 * 60 * 24;
@@ -287,7 +287,13 @@ export async function getCountries(): Promise<CountrySnapshot[]> {
 
 export async function getCountrySnapshot(slug: string) {
   const countries = await getCountries();
-  return countries.find((country) => country.slug === slug) ?? null;
+  const normalizedSlug = slugifyCountry(slug);
+
+  return (
+    countries.find((country) =>
+      getCountrySlugCandidates(country.name, country.iso2, country.iso3).includes(normalizedSlug)
+    ) ?? null
+  );
 }
 
 export async function getCountryHistory(slug: string): Promise<CountrySeriesPoint[]> {
@@ -425,6 +431,86 @@ export async function getSourceCatalog() {
       cadence: "daily" as const,
       lastSynced: datahubStamp ?? new Date().toISOString(),
       note: "DataHub aggregate and time-series CSVs are included as secondary archive references for cross-checking."
+    }
+  ];
+}
+
+export async function getSourceSnapshots(): Promise<SourceSnapshot[]> {
+  const [global, countries, whoRows, owidLatestCsv, datahubCsv, owidStamp, datahubStamp] = await Promise.all([
+    getGlobalSummary(),
+    getCountries(),
+    getWhoRows().catch(() => []),
+    fetchText(OWID_LATEST_CSV_URL, ARCHIVE_REVALIDATE_SECONDS).catch(() => ""),
+    fetchText(DATAHUB_WORLD_URL, ARCHIVE_REVALIDATE_SECONDS).catch(() => ""),
+    getRemoteLastModified(OWID_LATEST_CSV_URL, ARCHIVE_REVALIDATE_SECONDS),
+    getRemoteLastModified(DATAHUB_WORLD_URL, ARCHIVE_REVALIDATE_SECONDS)
+  ]);
+
+  const whoCountryCount = Math.max(whoRows.length - 1, 0);
+  const owidRows = owidLatestCsv ? csvParse(owidLatestCsv) : [];
+  const datahubRows = datahubCsv ? csvParse(datahubCsv) : [];
+  const datahubLastDate = datahubRows.at(-1)?.Date ?? "Not reported";
+
+  return [
+    {
+      id: "disease-current",
+      title: "disease.sh live API",
+      format: "api",
+      primaryLabel: "Global cases",
+      primaryValue: formatCompactNumber(global.totalCases),
+      secondaryLabel: "Affected countries",
+      secondaryValue: formatCompactNumber(countries.length),
+      detail: "Drives the live dashboard, country rankings, and reporting notes.",
+      sourceMeta: global.sourceMeta
+    },
+    {
+      id: "who-weekly",
+      title: "WHO CSV releases",
+      format: "csv",
+      primaryLabel: "Country rows",
+      primaryValue: formatCompactNumber(whoCountryCount),
+      secondaryLabel: "Cadence",
+      secondaryValue: "Weekly",
+      detail: "Official weekly releases exposed for fallback and source verification.",
+      sourceMeta: {
+        source: "who",
+        label: "WHO downloadable releases",
+        cadence: "weekly",
+        lastSynced: global.sourceMeta.lastSynced,
+        fallback: true
+      }
+    },
+    {
+      id: "owid-archive",
+      title: "OWID JSON + CSV archive",
+      format: "json",
+      primaryLabel: "Latest rows",
+      primaryValue: formatCompactNumber(owidRows.length),
+      secondaryLabel: "Last modified",
+      secondaryValue: owidStamp ? formatDate(owidStamp) : "Not reported",
+      detail: "Archive-ready JSON and CSV feeds for broader historical context.",
+      sourceMeta: {
+        source: "owid",
+        label: "Our World in Data archive",
+        cadence: "daily",
+        lastSynced: owidStamp ?? global.sourceMeta.lastSynced
+      }
+    },
+    {
+      id: "datahub-archive",
+      title: "DataHub CSV backup",
+      format: "csv",
+      primaryLabel: "Aggregate rows",
+      primaryValue: formatCompactNumber(datahubRows.length),
+      secondaryLabel: "Latest row date",
+      secondaryValue: datahubLastDate,
+      detail: "Secondary aggregate and time-series backup coverage for cross-checking.",
+      sourceMeta: {
+        source: "datahub",
+        label: "DataHub CSV archive",
+        cadence: "daily",
+        lastSynced: datahubStamp ?? global.sourceMeta.lastSynced
+      }
     }
   ];
 }

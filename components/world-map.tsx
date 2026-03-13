@@ -47,22 +47,36 @@ export function WorldMap({ countries }: { countries: CountrySnapshot[] }) {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_420px]">
         <div className="relative overflow-hidden rounded-[24px] bg-[#fff5f6] p-4">
-          <div className="absolute left-5 top-5 z-10 flex h-14 w-14 items-center justify-center rounded-[12px] bg-white shadow-[0_10px_24px_rgba(31,41,55,0.08)]">
+          <Link
+            href="/countries"
+            className="absolute left-5 top-5 z-10 flex h-14 w-14 items-center justify-center rounded-[12px] bg-white shadow-[0_10px_24px_rgba(31,41,55,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(31,41,55,0.12)]"
+            aria-label="Open countries"
+          >
             <SearchIcon className="h-6 w-6 text-[var(--primary)]" />
-          </div>
+          </Link>
 
           <div className="absolute right-6 top-6 z-10 flex flex-col overflow-hidden rounded-[12px] bg-white shadow-[0_10px_24px_rgba(31,41,55,0.08)]">
-            {["+", "-", "▲"].map((symbol, index) => (
-              <button
-                key={symbol}
-                type="button"
-                className={`flex h-12 w-10 items-center justify-center text-lg ${index < 2 ? "border-b border-[var(--border)]" : ""} ${
-                  symbol === "▲" ? "text-[var(--primary)]" : "text-[var(--text-secondary)]"
-                }`}
-              >
-                {symbol}
-              </button>
-            ))}
+            <Link
+              href="/countries"
+              className="flex h-12 w-10 items-center justify-center border-b border-[var(--border)] text-lg text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--foreground)]"
+              aria-label="Browse countries"
+            >
+              +
+            </Link>
+            <Link
+              href="/updates"
+              className="flex h-12 w-10 items-center justify-center border-b border-[var(--border)] text-lg text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--foreground)]"
+              aria-label="Open updates"
+            >
+              -
+            </Link>
+            <Link
+              href="/methodology"
+              className="flex h-12 w-10 items-center justify-center text-lg text-[var(--primary)] transition hover:bg-[var(--surface-soft)]"
+              aria-label="Open methodology"
+            >
+              ↑
+            </Link>
           </div>
 
           <SvgWorldMap
@@ -112,7 +126,7 @@ export function WorldMap({ countries }: { countries: CountrySnapshot[] }) {
                 <Link
                   key={country.slug}
                   href={`/countries/${country.slug}`}
-                  className="soft-panel flex items-center gap-4 rounded-[22px] px-4 py-5 transition hover:bg-white"
+                  className="soft-panel flex items-center gap-4 rounded-[22px] px-4 py-5 transition duration-200 hover:-translate-y-1 hover:bg-white hover:shadow-[0_16px_34px_rgba(31,41,55,0.08)]"
                 >
                   <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[var(--border)] bg-white">
                     <div

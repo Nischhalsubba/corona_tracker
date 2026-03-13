@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SourceBadge } from "@/components/source-badge";
-import { getSourceCatalog, SOURCE_ENDPOINT_GROUPS } from "@/lib/data/covid";
+import { getSourceCatalog, getSourceSnapshots, SOURCE_ENDPOINT_GROUPS } from "@/lib/data/covid";
 
 export const metadata: Metadata = {
   title: "Methodology & Data Sources",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MethodologyPage() {
-  const sources = await getSourceCatalog();
+  const [sources, snapshots] = await Promise.all([getSourceCatalog(), getSourceSnapshots()]);
 
   return (
     <div className="space-y-6">
@@ -28,6 +28,39 @@ export default async function MethodologyPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         {sources.map((source) => (
           <SourceBadge key={`${source.source}-${source.label}`} meta={source} />
+        ))}
+      </section>
+
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {snapshots.map((snapshot, index) => (
+          <article key={snapshot.id} className="surface rounded-[28px] p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-[var(--text-secondary)]">{snapshot.title}</div>
+                <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--text-tertiary)]">{snapshot.format}</div>
+              </div>
+              <div
+                className={`rounded-[14px] px-3 py-2 text-xs font-semibold ${
+                  index === 0
+                    ? "bg-[var(--primary-soft)] text-[var(--primary)]"
+                    : index === 1
+                      ? "bg-[rgba(255,176,32,0.16)] text-[var(--caution)]"
+                      : index === 2
+                        ? "bg-[rgba(76,125,255,0.12)] text-[var(--info)]"
+                        : "bg-[rgba(52,199,89,0.12)] text-[var(--positive)]"
+                }`}
+              >
+                {snapshot.sourceMeta.cadence}
+              </div>
+            </div>
+            <div className="mt-6 text-sm text-[var(--text-tertiary)]">{snapshot.primaryLabel}</div>
+            <div className="mt-2 text-[2.2rem] font-bold tracking-[-0.05em]">{snapshot.primaryValue}</div>
+            <div className="mt-5 rounded-[18px] bg-[var(--surface-soft)] px-4 py-4">
+              <div className="text-sm text-[var(--text-tertiary)]">{snapshot.secondaryLabel}</div>
+              <div className="mt-1 font-semibold">{snapshot.secondaryValue}</div>
+            </div>
+            <p className="mt-4 text-sm text-[var(--text-secondary)]">{snapshot.detail}</p>
+          </article>
         ))}
       </section>
 

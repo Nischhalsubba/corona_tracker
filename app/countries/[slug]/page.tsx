@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SourceBadge } from "@/components/source-badge";
-import { getCountryHistory, getCountrySnapshot, getReportingUpdates } from "@/lib/data/covid";
+import { getCountries, getCountryHistory, getCountrySnapshot, getReportingUpdates } from "@/lib/data/covid";
 import { siteUrl } from "@/lib/site";
 import { formatCompactNumber, formatNumber, safeRatio } from "@/lib/utils";
 
@@ -24,6 +24,11 @@ export async function generateMetadata({ params }: CountryPageProps): Promise<Me
     description: `View the current COVID-19 snapshot for ${country.name}, including total cases, recoveries, deaths, active cases, daily change, and source-backed reporting details.`,
     alternates: { canonical: `/countries/${country.slug}` }
   };
+}
+
+export async function generateStaticParams() {
+  const countries = await getCountries();
+  return countries.map((country) => ({ slug: country.slug }));
 }
 
 export default async function CountryPage({ params }: CountryPageProps) {

@@ -44,7 +44,7 @@ export function KpiCard({
   };
 
   return (
-    <article className="surface metric-gradient rounded-[26px] p-6">
+    <article className="surface metric-gradient rounded-[26px] p-6 transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(31,41,55,0.1)]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">

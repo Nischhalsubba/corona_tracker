@@ -49,8 +49,20 @@ export default async function HomePage() {
             <div className="flex items-center justify-between">
               <h2 className="text-[1.95rem] font-bold tracking-[-0.04em]">Live Reports</h2>
               <div className="flex gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--surface-soft)] text-[var(--text-tertiary)]">{"<"}</span>
-                <span className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--surface-soft)] text-[var(--primary)]">{">"}</span>
+                <Link
+                  href="/countries"
+                  className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--surface-soft)] text-[var(--text-tertiary)] transition hover:-translate-y-0.5 hover:text-[var(--foreground)]"
+                  aria-label="Open countries page"
+                >
+                  {"<"}
+                </Link>
+                <Link
+                  href="/updates"
+                  className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--surface-soft)] text-[var(--primary)] transition hover:-translate-y-0.5"
+                  aria-label="Open updates page"
+                >
+                  {">"}
+                </Link>
               </div>
             </div>
             <div className="mt-7 space-y-5">

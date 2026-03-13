@@ -64,3 +64,15 @@ export type ReportingUpdate = {
   publishedAt: string;
   sourceMeta: SourceMeta;
 };
+
+export type SourceSnapshot = {
+  id: string;
+  title: string;
+  format: "api" | "csv" | "json";
+  primaryLabel: string;
+  primaryValue: string;
+  secondaryLabel: string;
+  secondaryValue: string;
+  detail: string;
+  sourceMeta: SourceMeta;
+};
