@@ -1,0 +1,46 @@
+# PulseAtlas
+
+PulseAtlas is a source-aware public COVID-19 reporting dashboard built with Next.js and TypeScript.
+
+## Main features
+
+- Global COVID-19 totals
+- Searchable country index
+- Country detail pages
+- Historical trend charts
+- Interactive world map
+- Reporting updates
+- Methodology and source catalog
+- Light and dark themes
+
+## Data sources
+
+PulseAtlas combines public reporting from:
+
+- disease.sh
+- World Health Organization downloadable datasets
+- Our World in Data archives
+- DataHub CSV feeds
+
+Third-party data is fetched server-side and normalized into internal application types before it reaches the interface.
+
+## Technical summary
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Zod validation
+- Recharts
+- react-svg-worldmap
+- d3-dsv
+
+## Repository
+
+https://github.com/Nischhalsubba/corona_tracker
+
+## Health and data disclaimer
+
+PulseAtlas is an informational data dashboard, not a medical service or official public-health authority. It does not provide diagnosis, treatment, emergency advice, or individualized medical recommendations.
+
+COVID-19 reporting can be delayed, revised, incomplete, differently defined across countries, or discontinued by upstream providers. Always review the source label and update time before relying on a figure. For current health guidance, consult official national health authorities, the World Health Organization, or a qualified healthcare professional.
