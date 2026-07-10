@@ -1,7 +1,10 @@
 {
-  "name": "corona-tracker",
+  "name": "pulseatlas-covid-dashboard",
   "version": "0.1.0",
   "private": true,
+  "description": "A source-aware global COVID-19 reporting dashboard with country pages, historical trends, transparent source metadata, and normalized public-health data feeds.",
+  "author": "Nischhal Raj Subba",
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
