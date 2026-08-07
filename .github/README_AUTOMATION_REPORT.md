@@ -6,5 +6,6 @@ Generator: `aed303eed8a536f2dda075c8be583693325aac37`
 
 | Branch | Result | Detail |
 |---|---|---|
-| `develop` | updated | Branch-specific README committed |
-| `master` | updated | Branch-specific README committed |
+| `agent/security-next-lock` | updated | Branch-specific README committed |
+| `develop` | unchanged | README already matched the standard |
+| `master` | unchanged | README already matched the standard |
